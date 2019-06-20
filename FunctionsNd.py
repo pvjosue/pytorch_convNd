@@ -14,7 +14,7 @@ class ConvNd(nn.Module):
                  padding,
                  dilation: int = 1,
                  groups: int = 1,
-                 bias: bool = True,
+                 use_bias: bool = True,
                  bias_initializer: Callable = None,
                  kernel_initializer: Callable = None):
         super(ConvNd, self).__init__()
@@ -53,25 +53,32 @@ class ConvNd(nn.Module):
         self.stride = stride
         self.padding = padding
         self.groups = groups
-        self.bias = bias
+        self.use_bias = use_bias
+        self.weight = torch.nn.Parameter(data=torch.ones(1,num_dims), requires_grad=True)
+        self.bias = torch.nn.Parameter(data=torch.ones(1,num_dims), requires_grad=True)
         self.bias_initializer = bias_initializer
         self.kernel_initializer = kernel_initializer
 
         # ---------------------------------------------------------------------
         # Construct 3D convolutional layers
         # ---------------------------------------------------------------------
-
+        if self.kernel_initializer is not None:
+            self.kernel_initializer(self.weight)
+            if self.bias_initializer is not None:
+                if self.use_bias:
+                    self.bias_initializer(self.bias)
         # Use a ModuleList to store layers to make the Conv4d layer trainable
         self.conv_layers = torch.nn.ModuleList()
 
         # Compute the next dimension, so for a conv4D, get index 3
         next_dim_len = self.kernel_size[0] 
         
-        for i in range(next_dim_len):
-            if self.num_dims-1 != 2:
+        for _ in range(next_dim_len):
+            if self.num_dims-1 != 3:
                 # Initialize a Conv_n-1_D layer
                 conv_layer = ConvNd(in_channels=self.in_channels,
                                             out_channels=self.out_channels,
+                                            use_bias=self.use_bias,
                                             num_dims=self.num_dims-1,
                                             kernel_size=self.kernel_size[1:],
                                             stride=self.stride[1:],
@@ -79,8 +86,9 @@ class ConvNd(nn.Module):
 
             else:
                 # Initialize a Conv3D layer
-                conv_layer = torch.nn.Conv2d(in_channels=self.in_channels,
+                conv_layer = torch.nn.Conv3d(in_channels=self.in_channels,
                                             out_channels=self.out_channels,
+                                            bias=self.use_bias,
                                             kernel_size=self.kernel_size[1:],
                                             stride=self.stride[1:],
                                             padding=self.padding[1:])
@@ -89,7 +97,8 @@ class ConvNd(nn.Module):
             if self.kernel_initializer is not None:
                 self.kernel_initializer(conv_layer.weight)
             if self.bias_initializer is not None:
-                self.bias_initializer(conv_layer.bias)
+                if self.use_bias:
+                    self.bias_initializer(conv_layer.bias)
 
             # Store the layer
             self.conv_layers.append(conv_layer)
@@ -111,7 +120,7 @@ class ConvNd(nn.Module):
         # l_i + 2 * self.padding - l_k + 1
 
         # Output tensors for each 3D frame
-        frame_results = size_o[0] * [torch.zeros((b,c_i) + size_o[1:])] # todo: add .cuda()
+        frame_results = size_o[0] * [torch.zeros((b,c_i) + size_o[1:]).cuda()] # todo: add .cuda()
         empty_frames = size_o[0] * [None]
 
         # Convolve each kernel frame i with each input frame j
@@ -128,9 +137,11 @@ class ConvNd(nn.Module):
                     continue
 
                 conv_input = input.view(b, c_i, size_i[0], -1)
+                conv_input = conv_input[:, :, j, :].view((b, c_i) + size_i[1:])
+                # if self.num_dims==4:
+                    # conv_input = F.pad(conv_input,(self.padding[0],self.padding[0],self.padding[1],self.padding[1],self.padding[2],self.padding[2]), mode='reflect')
                 frame_conv = \
-                    self.conv_layers[i](conv_input[:, :, j, :]
-                                          .view((b, c_i) + size_i[1:]))
+                    self.conv_layers[i](conv_input)
 
                 if empty_frames[out_frame] is None:
                     frame_results[out_frame] = frame_conv
