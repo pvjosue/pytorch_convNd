@@ -14,6 +14,7 @@ class ConvNd(nn.Module):
                  padding,
                  dilation: int = 1,
                  groups: int = 1,
+                 rank: int = 0,
                  use_bias: bool = True,
                  bias_initializer: Callable = None,
                  kernel_initializer: Callable = None):
@@ -31,7 +32,7 @@ class ConvNd(nn.Module):
 
         # This parameter defines which Pytorch convolution to use as a base, for 3 Conv2D is used
         # for conv4D max_dims
-        max_dims = 2
+        max_dims = num_dims-1
         self.conv_f = (nn.Conv1d, nn.Conv2d, nn.Conv3d)[max_dims - 1]
         
         assert len(kernel_size) == num_dims, \
@@ -50,7 +51,7 @@ class ConvNd(nn.Module):
         # ---------------------------------------------------------------------
         # Store constructor arguments
         # ---------------------------------------------------------------------
-
+        self.rank = rank
         self.in_channels = in_channels
         self.out_channels = out_channels
         self.num_dims = num_dims
@@ -91,6 +92,7 @@ class ConvNd(nn.Module):
                                             num_dims=self.num_dims-1,
                                             kernel_size=self.kernel_size[1:],
                                             stride=self.stride[1:],
+                                            rank=self.rank-1,
                                             padding=self.padding[1:])
 
             else:
@@ -101,7 +103,8 @@ class ConvNd(nn.Module):
                                             bias=False,
                                             kernel_size=self.kernel_size[1:],
                                             stride=self.stride[1:],
-                                            padding=self.padding[1:])
+                                            padding=self.padding[1:], 
+                                            padding_mode = 'reflect')
 
             # Apply initializer functions to weight and bias tensor
             if self.kernel_initializer is not None:
@@ -113,21 +116,31 @@ class ConvNd(nn.Module):
     # -------------------------------------------------------------------------
 
     def forward(self, input):
+        padding = list(self.padding)
+        # Pad input if this is the parent convolution ie rank=0
+        if self.rank==0:
+            inputShape = list(input.shape)
+            inputShape[2] += 2*self.padding[0]
+            padSize = (0,0,self.padding[0],self.padding[0])
+            padding[0] = 0
+            # for k,p in enumerate(self.padding):
+            #     padSize = (p,p) + padSize
+            input = F.pad(input.view(input.shape[0],input.shape[1],input.shape[2],-1),padSize,'reflect').view(inputShape)
         # Define shortcut names for dimensions of input and kernel
         (b, c_i) = tuple(input.shape[0:2])
         size_i = tuple(input.shape[2:])
         size_k = self.kernel_size
 
         # Compute the size of the output tensor based on the zero padding
-        size_o = tuple([math.floor((size_i[x] + 2 * self.padding[x] - size_k[x]) / self.stride[x] + 1) for x in range(len(size_i))])
+        size_o = tuple([math.floor((size_i[x] + 2 * padding[x] - size_k[x]) / self.stride[x] + 1) for x in range(len(size_i))])
         # (math.floor((l_i + 2 * self.padding - l_k) / self.stride + 1),
 
         # Compute size of the output without stride
-        size_ons = tuple([size_i[x] + 2 * self.padding[x] - size_k[x] + 1 for x in range(len(size_i))])
+        size_ons = tuple([size_i[x] - size_k[x] + 1 for x in range(len(size_i))])
 
 
         # Output tensors for each 3D frame
-        frame_results = size_o[0] * [torch.zeros((b,c_i) + size_o[1:]).to(input.device)] # todo: add .cuda()
+        frame_results = size_o[0] * [torch.zeros((b,c_i) + size_o[1:]).to(input.device)]
         empty_frames = size_o[0] * [None]
 
         # Convolve each kernel frame i with each input frame j

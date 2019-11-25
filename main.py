@@ -10,11 +10,11 @@ torch.backends.cudnn.deterministic = True
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(device)
 inChans = 3
-outChans = 91
+outChans = 2
 x = torch.rand((2, inChans, 51, 51, 51)).to(device)
 
 ks = (3, 3, 3)
-padding = 1
+padding = 0
 stride = 4
 weight = 2
 bias = 0
