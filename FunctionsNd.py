@@ -60,8 +60,6 @@ class ConvNd(nn.Module):
         self.padding = padding
         self.groups = groups
         self.use_bias = use_bias
-        self.weight = nn.Parameter(torch.Tensor(
-                out_channels, in_channels // groups, self.kernel_size[0]))
         if use_bias:
             self.bias = nn.Parameter(torch.Tensor(out_channels))
         else:
@@ -72,8 +70,6 @@ class ConvNd(nn.Module):
         # ---------------------------------------------------------------------
         # Construct 3D convolutional layers
         # ---------------------------------------------------------------------
-        if self.kernel_initializer is not None:
-            self.kernel_initializer(self.weight)
         if self.bias_initializer is not None:
             if self.use_bias:
                 self.bias_initializer(self.bias)
@@ -242,8 +238,6 @@ class ConvTransposeNd(nn.Module):
         # ---------------------------------------------------------------------
         # Construct 3D convolutional layers
         # ---------------------------------------------------------------------
-        # if self.kernel_initializer is not None:
-            # self.kernel_initializer(self.weight)
         if self.bias_initializer is not None:
             if self.use_bias:
                 self.bias_initializer(self.bias)
