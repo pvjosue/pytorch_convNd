@@ -136,7 +136,7 @@ class ConvNd(nn.Module):
 
 
         # Output tensors for each 3D frame
-        frame_results = size_o[0] * [torch.zeros((b,c_i) + size_o[1:]).to(input.device)]
+        frame_results = size_o[0] * [torch.zeros((b,c_i) + size_o[1:], device=input.device)]
         empty_frames = size_o[0] * [None]
 
         # Convolve each kernel frame i with each input frame j
