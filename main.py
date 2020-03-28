@@ -8,30 +8,36 @@ import matplotlib.pyplot as plt
 torch.backends.cudnn.deterministic = True
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-print(device)
+
+# Define 3D tensor to test on
 inChans = 3
 outChans = 2
 x = torch.rand((2, inChans, 51, 51, 51)).to(device)
-
 ks = (3, 3, 3)
 padding = 0
 stride = 4
 weight = 2
 bias = 0
+# ConvNd where d = 3
 conv = ConvNd(inChans, outChans, 3, ks, stride, padding, use_bias=True, 
 kernel_initializer=lambda x: torch.nn.init.constant_(x, weight), 
 bias_initializer=lambda x: torch.nn.init.constant_(x, bias)).to(device)
 
-convT = ConvTransposeNd(1, 1, 3, ks, stride, padding, 
-kernel_initializer=lambda x: torch.nn.init.constant_(x, weight), 
-bias_initializer=lambda x: torch.nn.init.constant_(x, bias)).to(device)
+# Transposed convolution not yet tested
+# convT = ConvTransposeNd(1, 1, 3, ks, stride, padding, 
+# kernel_initializer=lambda x: torch.nn.init.constant_(x, weight), 
+# bias_initializer=lambda x: torch.nn.init.constant_(x, bias)).to(device)
 
-start = time.time()
+start = torch.cuda.Event(enable_timing=True)
+end = torch.cuda.Event(enable_timing=True)
+
+# Convolve with ConvNd
+torch.cuda.synchronize()
+start.record()
 out = conv(x)
-# outT = convT(x)
-print("mine")
-end = time.time()
-print(end - start)
+end.record()
+torch.cuda.synchronize()
+print("ConvNd time: " + str(start.elapsed_time(end)))
 
 useGT = True
 
@@ -48,16 +54,15 @@ if useGT:
     # convGTT = convGTT.to(device)
 
 
-    start = time.time()
+    start.record()
     outGT = convGT(x)
     # outGTT = convGTT(x)
     print("GT")
-    end = time.time()
-    print(end - start)
+    end.record()
+    torch.cuda.synchronize()
+    print("ConvNd time: " + str(start.elapsed_time(end)))
     diff = abs(out-outGT)
-    # diffT = abs(outT-outGTT)
-    print(torch.sum(diff))
-    # print(torch.sum(diffT))
+    print("Abs error: " + str(torch.sum(diff)))
 
 # print(out.shape)
 plt.figure(1)
