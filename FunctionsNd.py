@@ -44,8 +44,8 @@ class ConvNd(nn.Module):
             'nD padding size expected!'
         assert dilation == 1, \
             'Dilation rate other than 1 not yet implemented!'
-        assert groups == 1, \
-            'Groups other than 1 not yet implemented!'
+        # assert groups == 1, \
+            # 'Groups other than 1 not yet implemented!'
         # assert num_dims >=max_dims, \
         #     'This function works for more than 3 dimensions, for less use torch implementation'
 
@@ -91,6 +91,7 @@ class ConvNd(nn.Module):
                                             kernel_size=self.kernel_size[1:],
                                             stride=self.stride[1:],
                                             rank=self.rank-1,
+                                            groups=self.groups,
                                             padding=self.padding[1:],
                                             padding_mode=self.padding_mode)
 
@@ -103,7 +104,8 @@ class ConvNd(nn.Module):
                                             kernel_size=self.kernel_size[1:],
                                             stride=self.stride[1:],
                                             padding=self.padding[1:], 
-                                            padding_mode=self.padding_mode)
+                                            padding_mode=self.padding_mode,
+                                            groups=self.groups,)
 
             # Apply initializer functions to weight and bias tensor
             if self.kernel_initializer is not None:
@@ -220,8 +222,8 @@ class ConvTransposeNd(nn.Module):
             '4D padding size expected!'
         assert dilation == 1, \
             'Dilation rate other than 1 not yet implemented!'
-        assert groups == 1, \
-            'Groups other than 1 not yet implemented!'
+        # assert groups == 1, \
+            # 'Groups other than 1 not yet implemented!'
         # assert num_dims >=max_dims, \
         #     'This function works for more than 3 dimensions, for less use torch implementation'
 
@@ -267,6 +269,7 @@ class ConvTransposeNd(nn.Module):
                                             kernel_size=self.kernel_size[1:],
                                             stride=self.stride[1:],
                                             rank=self.rank-1,
+                                            groups=self.groups,
                                             padding=self.padding[1:],
                                             padding_mode=self.padding_mode)
 
@@ -279,7 +282,8 @@ class ConvTransposeNd(nn.Module):
                                             kernel_size=self.kernel_size[1:],
                                             stride=self.stride[1:],
                                             padding=self.padding[1:],
-                                            padding_mode=self.padding_mode)
+                                            padding_mode=self.padding_mode,
+                                            groups=self.groups,)
 
             # Apply initializer functions to weight and bias tensor
             if self.kernel_initializer is not None:
@@ -291,7 +295,7 @@ class ConvTransposeNd(nn.Module):
     # -------------------------------------------------------------------------
 
     def forward(self, input):
-        padding = list(self.padding)
+        # padding = list(self.padding)
         # Pad input if this is the parent convolution ie rank=0
         # if self.rank==0:
         #     inputShape = list(input.shape)

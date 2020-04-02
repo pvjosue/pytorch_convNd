@@ -10,8 +10,8 @@ torch.backends.cudnn.deterministic = True
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Define 3D tensor to test on
-inChans = 1
-outChans = 1
+inChans = 4
+outChans = 12
 x = torch.rand(1, inChans, 51, 51, 51).to(device)
 ks = 3
 padding = 3
@@ -20,23 +20,27 @@ padding_mode = 'zeros'
 stride = 1
 weight = 2
 bias = 2
+groups = 2
 
 # ConvNd where d = 3
-conv = ConvNd(inChans, outChans, 3, ks, stride, padding, use_bias=True, padding_mode=padding_mode, 
+conv = ConvNd(inChans, outChans, 3, ks, stride, padding, use_bias=True, 
+padding_mode=padding_mode, groups=groups,
 kernel_initializer=lambda x: torch.nn.init.constant_(x, weight), 
 bias_initializer=lambda x: torch.nn.init.constant_(x, bias)).to(device)
 
 # Transposed convolution not yet tested
-convT = ConvTransposeNd(inChans, outChans, 3, ks, stride, padding, 
+convT = ConvTransposeNd(inChans, outChans, 3, ks, stride, padding, groups=groups,
 kernel_initializer=lambda x: torch.nn.init.constant_(x, weight), 
 bias_initializer=lambda x: torch.nn.init.constant_(x, bias)).to(device)
 
 # Create 3D gt convolutions
-convGT = nn.Conv3d(inChans, outChans, ks, stride, padding=padding, bias=True, padding_mode=padding_mode)
+convGT = nn.Conv3d(inChans, outChans, ks, stride, padding=padding, bias=True, 
+padding_mode=padding_mode, groups=groups,)
 torch.nn.init.constant_(convGT.weight, weight)
 torch.nn.init.constant_(convGT.bias, bias).to(device)
 # Transposed
-convGTT = nn.ConvTranspose3d(inChans, outChans, ks, stride, padding=padding, padding_mode=padding_mode)
+convGTT = nn.ConvTranspose3d(inChans, outChans, ks, stride, padding=padding, 
+padding_mode=padding_mode, groups=groups,)
 torch.nn.init.constant_(convGTT.weight, weight)
 torch.nn.init.constant_(convGTT.bias, bias).to(device)
 
