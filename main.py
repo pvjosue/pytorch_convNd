@@ -68,7 +68,7 @@ torch.cuda.synchronize()
 print("ConvGT time: " + str(start.elapsed_time(end)))
 
 diff = abs(out-outGT)
-print("convND error: " + str((torch.sum(diff)/outGT.sum()).item()) + "%",end='\n\n')
+print("convND error: " + str((torch.sum(diff)/outGT.sum()).item()) + " %",end='\n\n')
 
 # Convolve with ConvTransposeNd
 torch.cuda.synchronize()
@@ -86,7 +86,7 @@ print("ConvTransposeGT time: " + str(start.elapsed_time(end)))
 
 
 diff = (outT-outGTT)
-print("convTransposeND error: " + str((torch.sum(diff)/outGTT.sum()).item()) + "%")
+print("convTransposeND error: " + str((torch.sum(diff)/outGTT.sum()).item()) + " %")
 
 
 plt.figure(1)
