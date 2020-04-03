@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from FunctionsNd import convNd
+from convNd import convNd
 import time
 import matplotlib.pyplot as plt
 torch.backends.cudnn.deterministic = True
@@ -97,10 +97,10 @@ plt.imshow(x[0,0,:,:,:].sum(2).cpu().data.detach())
 plt.title('input')
 plt.subplot(222)
 plt.imshow(outT[0,:,:,:,:].sum(2).sum(0).cpu().data.detach())
-plt.title('convND out')
+plt.title('transposed convND out')
 plt.subplot(223)
 plt.imshow(outGTT[0,:,:,:,:].sum(2).sum(0).cpu().data.detach())
-plt.title('GT out')
+plt.title('transposed GT out')
 plt.subplot(224)
 plt.imshow(diff[0,:,:,:,:].sum(2).sum(0).cpu().data.detach())
 plt.title('diff out')
