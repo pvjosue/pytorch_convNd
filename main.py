@@ -10,17 +10,17 @@ torch.backends.cudnn.deterministic = True
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Define 3D tensor to test on
-inChans = 4
-outChans = 12
-x = torch.rand(1, inChans, 51, 51, 51).to(device)
-ks = 3
-padding = 3
+inChans = 1
+outChans = 1
+x = torch.rand(1, inChans, 51, 31, 31).to(device)
+ks = 5
+padding = 4
 # Only zeros allowed by pytorch
 padding_mode = 'zeros'
-stride = 1
-weight = 2
-bias = 2
-groups = 2
+stride = 2
+weight = 1
+bias = 1
+groups = 1
 
 # ConvNd where d = 3
 conv = ConvNd(inChans, outChans, 3, ks, stride, padding, use_bias=True, 
@@ -28,7 +28,7 @@ padding_mode=padding_mode, groups=groups,
 kernel_initializer=lambda x: torch.nn.init.constant_(x, weight), 
 bias_initializer=lambda x: torch.nn.init.constant_(x, bias)).to(device)
 
-# Transposed convolution not yet tested
+# Transposed convolution
 convT = ConvTransposeNd(inChans, outChans, 3, ks, stride, padding, groups=groups,
 kernel_initializer=lambda x: torch.nn.init.constant_(x, weight), 
 bias_initializer=lambda x: torch.nn.init.constant_(x, bias)).to(device)
@@ -85,7 +85,7 @@ torch.cuda.synchronize()
 print("ConvTransposeGT time: " + str(start.elapsed_time(end)))
 
 
-diff = (outT-outGTT)
+diff = abs(outT-outGTT)
 print("convTransposeND error: " + str((torch.sum(diff)/outGTT.sum()).item()) + " %")
 
 
@@ -94,12 +94,12 @@ plt.subplot(221)
 plt.imshow(x[0,0,:,:,:].sum(2).cpu().data.detach())
 plt.title('input')
 plt.subplot(222)
-plt.imshow(outT[0,:,:,:,:].sum(2).sum(1).cpu().data.detach())
+plt.imshow(outT[0,:,:,:,:].sum(2).sum(0).cpu().data.detach())
 plt.title('convND out')
 plt.subplot(223)
-plt.imshow(outGTT[0,:,:,:,:].sum(2).sum(1).cpu().data.detach())
+plt.imshow(outGTT[0,:,:,:,:].sum(2).sum(0).cpu().data.detach())
 plt.title('GT out')
 plt.subplot(224)
-plt.imshow(diff[0,:,:,:,:].sum(2).sum(1).cpu().data.detach())
+plt.imshow(diff[0,:,:,:,:].sum(2).sum(0).cpu().data.detach())
 plt.title('diff out')
 plt.show()
