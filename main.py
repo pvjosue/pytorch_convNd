@@ -15,6 +15,7 @@ outChans = 16
 x = torch.rand(1, inChans, 51, 31, 31).to(device)
 ks = 5
 padding = 4
+output_padding = 1
 # Only zeros allowed by pytorch
 padding_mode = 'zeros'
 stride = 2
@@ -29,7 +30,8 @@ kernel_initializer=lambda x: torch.nn.init.constant_(x, weight),
 bias_initializer=lambda x: torch.nn.init.constant_(x, bias)).to(device)
 
 # Transposed convolution
-convT = ConvTransposeNd(inChans, outChans, 3, ks, stride, padding, groups=groups,
+convT = ConvTransposeNd(inChans, outChans, 3, ks, stride, padding, 
+groups=groups, output_padding=output_padding,
 kernel_initializer=lambda x: torch.nn.init.constant_(x, weight), 
 bias_initializer=lambda x: torch.nn.init.constant_(x, bias)).to(device)
 
@@ -39,7 +41,8 @@ padding_mode=padding_mode, groups=groups,)
 torch.nn.init.constant_(convGT.weight, weight)
 torch.nn.init.constant_(convGT.bias, bias).to(device)
 # Transposed
-convGTT = nn.ConvTranspose3d(inChans, outChans, ks, stride, padding=padding, 
+convGTT = nn.ConvTranspose3d(inChans, outChans, ks, stride, 
+padding=padding, output_padding=output_padding, 
 padding_mode=padding_mode, groups=groups,)
 torch.nn.init.constant_(convGTT.weight, weight)
 torch.nn.init.constant_(convGTT.bias, bias).to(device)
