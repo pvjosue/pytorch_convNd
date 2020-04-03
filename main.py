@@ -10,8 +10,8 @@ torch.backends.cudnn.deterministic = True
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Define 3D tensor to test on
-inChans = 1
-outChans = 1
+inChans = 8
+outChans = 16
 x = torch.rand(1, inChans, 51, 31, 31).to(device)
 ks = 5
 padding = 4
@@ -20,7 +20,7 @@ padding_mode = 'zeros'
 stride = 2
 weight = 1
 bias = 1
-groups = 1
+groups = 4
 
 # ConvNd where d = 3
 conv = ConvNd(inChans, outChans, 3, ks, stride, padding, use_bias=True, 
