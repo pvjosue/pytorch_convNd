@@ -21,7 +21,7 @@ weight = 1
 bias = 0
 groups = 1
 
-# ConvNd where d = 3
+# ConvNd where d = 5
 conv = convNd(inChans, outChans, 5, ks, stride, padding, use_bias=True, 
 padding_mode=padding_mode, groups=groups,
 kernel_initializer=lambda x: torch.nn.init.constant_(x, weight), 
