@@ -1,8 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from FunctionsNd import ConvNd
-from FunctionsNd import ConvTransposeNd
+from FunctionsNd import convNd
 import time
 import matplotlib.pyplot as plt
 torch.backends.cudnn.deterministic = True
@@ -12,26 +11,26 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # Define 3D tensor to test on
 inChans = 8
 outChans = 16
-x = torch.rand(1, inChans, 51, 31, 31).to(device)
+x = torch.rand(1, inChans, 21, 21, 21).to(device)
 ks = 5
-padding = 4
-output_padding = 1
+padding = 2
+output_padding = 2
 # Only zeros allowed by pytorch
 padding_mode = 'zeros'
-stride = 2
+stride = 4
 weight = 1
 bias = 1
-groups = 4
+groups = 1
 
 # ConvNd where d = 3
-conv = ConvNd(inChans, outChans, 3, ks, stride, padding, use_bias=True, 
-padding_mode=padding_mode, groups=groups,
+conv = convNd(inChans, outChans, 3, ks, stride, padding, use_bias=True, 
+is_transposed=False, padding_mode=padding_mode, groups=groups,
 kernel_initializer=lambda x: torch.nn.init.constant_(x, weight), 
 bias_initializer=lambda x: torch.nn.init.constant_(x, bias)).to(device)
 
 # Transposed convolution
-convT = ConvTransposeNd(inChans, outChans, 3, ks, stride, padding, 
-groups=groups, output_padding=output_padding,
+convT = convNd(inChans, outChans, 3, ks, stride, padding, 
+is_transposed=True, groups=groups, output_padding=output_padding,
 kernel_initializer=lambda x: torch.nn.init.constant_(x, weight), 
 bias_initializer=lambda x: torch.nn.init.constant_(x, bias)).to(device)
 
