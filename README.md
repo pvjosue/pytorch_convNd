@@ -1,4 +1,4 @@
-# convNd and convTransposeNd
+# convNd and convTransposeNd in Pytorch
 This n-dimensional convolution is based on recursivly creating a convNd with many conv(N-1)d, until reaching conv3d, where the Pytorch implementation is used. . Also, passing a flag **is_transposed**=True to the convNd function will result in a convTransposeNd operation.
 
 The following convolution features are available:
