@@ -20,56 +20,56 @@ The convNd was used as a conv4d layer inside the [LFMNet](https://github.com/pvj
 
 ## Usage
 Example in 5D
+```python
+import torch
+from convNd import convNd
 
-    import torch
-    from convNd import convNd
+# define basic layer info
+inChans = 2
+outChans = 4
+weight = torch.rand(1)[0]
+bias = torch.rand(1)[0]
 
-    # define basic layer info
-    inChans = 2
-    outChans = 4
-    weight = torch.rand(1)[0]
-    bias = torch.rand(1)[0]
+# create input tensor
+x = torch.rand(1, inChans, 5, 5, 5, 5, 5).cuda()
+conv5d = convNd(
+    in_channels=inChans, 
+    out_channels=outChans,
+    num_dims=5, 
+    kernel_size=3, 
+    stride=(2,1,1,1,1), 
+    padding=0, 
+    padding_mode='zeros',
+    output_padding=0,
+    is_transposed=False,
+    use_bias=True, 
+    groups=2,
+    kernel_initializer=lambda x: torch.nn.init.constant_(x, weight), 
+    bias_initializer=lambda x: torch.nn.init.constant_(x, bias)).cuda()
 
-    # create input tensor
-    x = torch.rand(1, inChans, 5, 5, 5, 5, 5).cuda()
-    conv5d = convNd(
-        in_channels=inChans, 
-        out_channels=outChans,
-        num_dims=5, 
-        kernel_size=3, 
-        stride=(2,1,1,1,1), 
-        padding=0, 
-        padding_mode='zeros',
-        output_padding=0,
-        is_transposed=False,
-        use_bias=True, 
-        groups=2,
-        kernel_initializer=lambda x: torch.nn.init.constant_(x, weight), 
-        bias_initializer=lambda x: torch.nn.init.constant_(x, bias)).cuda()
-            
-            
-    # Create tranposed 5D convolution
-    # note the is_tranposed parameter
-    convT5d = convNd(
-        in_channels=inChans,
-        out_channels=outChans,
-        num_dims=5,
-        kernel_size=3,
-        stride=(2,1,1,1,1),
-        padding=0,
-        padding_mode='zeros',
-        output_padding=0,
-        is_transposed=True,
-        use_bias=True,
-        groups=2,
-        kernel_initializer=lambda x: torch.nn.init.constant_(x, weight), 
-        bias_initializer=lambda x: torch.nn.init.constant_(x, bias)).cuda()
 
-    # apply conv5d
-    xConv = conv5d(x)
-    print(xConv.shape)
+# Create tranposed 5D convolution
+# note the is_tranposed parameter
+convT5d = convNd(
+    in_channels=inChans,
+    out_channels=outChans,
+    num_dims=5,
+    kernel_size=3,
+    stride=(2,1,1,1,1),
+    padding=0,
+    padding_mode='zeros',
+    output_padding=0,
+    is_transposed=True,
+    use_bias=True,
+    groups=2,
+    kernel_initializer=lambda x: torch.nn.init.constant_(x, weight), 
+    bias_initializer=lambda x: torch.nn.init.constant_(x, bias)).cuda()
 
-    # apply convTranspose5d
-    xTConv = convT5d(x)
-    print(xTConv.shape)
+# apply conv5d
+xConv = conv5d(x)
+print(xConv.shape)
 
+# apply convTranspose5d
+xTConv = convT5d(x)
+print(xTConv.shape)
+```
