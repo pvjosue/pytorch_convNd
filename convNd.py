@@ -149,7 +149,7 @@ class convNd(nn.Module):
                 inputShape[2] += 2*self.padding[0]
                 padSize = (0,0,self.padding[0],self.padding[0])
                 padding[0] = 0
-                if self.padding_mode is 'zeros':
+                if self.padding_mode == 'zeros':
                     input = F.pad(input.view(input.shape[0],input.shape[1],input.shape[2],-1),padSize,'constant',0).view(inputShape)
                 else:
                     input = F.pad(input.view(input.shape[0],input.shape[1],input.shape[2],-1),padSize,self.padding_mode).view(inputShape)
