@@ -4,9 +4,14 @@ import torch.nn.functional as F
 from convNd import convNd
 import time
 import matplotlib.pyplot as plt
+import sys
+
 torch.backends.cudnn.deterministic = True
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+print(f'Python version:  {sys.version}')
+print(f'Pytorch version: {torch.__version__}')
 
 # Define 3D tensor to test on
 inChans = 8
