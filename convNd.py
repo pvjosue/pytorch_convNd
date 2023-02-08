@@ -83,6 +83,11 @@ class convNd(nn.Module):
         self.bias_initializer = bias_initializer
         self.kernel_initializer = kernel_initializer
 
+        # Custom initializer, to correctly compute the fan in/out
+        if rank==0 and self.kernel_initializer is None:
+            k = 1/torch.sqrt(self.in_channels * torch.prod(torch.tensor(self.kernel_size)))
+            self.kernel_initializer = lambda x: torch.nn.init.uniform_(x, -k, k)
+
         # ---------------------------------------------------------------------
         # Construct 3D convolutional layers
         # ---------------------------------------------------------------------
@@ -149,7 +154,7 @@ class convNd(nn.Module):
                 inputShape[2] += 2*self.padding[0]
                 padSize = (0,0,self.padding[0],self.padding[0])
                 padding[0] = 0
-                if self.padding_mode is 'zeros':
+                if self.padding_mode == 'zeros':
                     input = F.pad(input.view(input.shape[0],input.shape[1],input.shape[2],-1),padSize,'constant',0).view(inputShape)
                 else:
                     input = F.pad(input.view(input.shape[0],input.shape[1],input.shape[2],-1),padSize,self.padding_mode).view(inputShape)
